@@ -1,0 +1,668 @@
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+a {
+  color: inherit;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1 {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  letter-spacing: -0.055em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+h2 {
+  font-size: 1.4rem;
+  letter-spacing: -0.035em;
+  margin-bottom: 12px;
+}
+p {
+  line-height: 1.65;
+  color: #596a62;
+}
+button,
+a,
+input {
+  touch-action: manipulation;
+}
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #a2512c;
+  outline-offset: 4px;
+}
+.eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  font-weight: 750;
+  color: #62746a;
+  display: block;
+  margin-bottom: 14px;
+}
+.brand {
+  font-size: 1.05rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.brand-symbol {
+  background: #183f34;
+  color: #fff;
+  border-radius: 8px;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.public-header {
+  max-width: 1280px;
+  margin: auto;
+  padding: 28px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #dce1d8;
+}
+.owner-link {
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+.public-main {
+  max-width: 1180px;
+  margin: 55px auto 70px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 65px;
+  padding: 0 32px;
+  align-items: start;
+}
+.intro {
+  padding-top: 45px;
+}
+.intro h1 {
+  font-size: clamp(3.8rem, 6.3vw, 6rem);
+  letter-spacing: -0.075em;
+  font-weight: 600;
+  line-height: 0.99;
+  margin: 30px 0;
+}
+.intro h1 em {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.065em;
+  color: #a2512c;
+}
+.intro-detail {
+  display: flex;
+  gap: 25px;
+  border-top: 1px solid #d8ddd3;
+  margin-top: 50px;
+  padding-top: 22px;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+.barber-line {
+  width: 100%;
+  height: 7px;
+  background: repeating-linear-gradient(
+    120deg,
+    #183f34 0 32px,
+    #e3e6dc 32px 64px,
+    #a2512c 64px 96px,
+    #e3e6dc 96px 128px
+  );
+  opacity: 0.8;
+  margin-top: 45px;
+}
+.address {
+  margin-top: 30px;
+  font-size: 0.85rem;
+}
+.booking-panel {
+  padding: 32px !important;
+  border-color: #dce1d8 !important;
+  min-height: 360px;
+  border-radius: 20px !important;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.section-heading .eyebrow {
+  margin-bottom: 8px;
+}
+.section-heading h2 {
+  margin-bottom: 0;
+}
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+}
+.chosen {
+  font-size: 0.85rem;
+  background: #edf2ea;
+  padding: 12px;
+  border-radius: 8px;
+}
+.review {
+  padding: 20px;
+  background: #f5f6f0 !important;
+}
+.review p:last-child {
+  margin-bottom: 0;
+}
+.small {
+  font-size: 0.78rem;
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+.confirmation-date {
+  font-size: 1.4rem;
+  color: #183f34;
+  text-transform: capitalize;
+}
+.confirmation-date strong {
+  font-size: 3rem;
+}
+.public-footer {
+  max-width: 1180px;
+  margin: auto;
+  padding: 22px 32px;
+  border-top: 1px solid #dce1d8;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+.public-footer span {
+  color: #62746a;
+}
+.shell {
+  padding: 30px;
+}
+.login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+.login h1 {
+  font-size: 2rem;
+}
+.login .small {
+  margin-top: 20px;
+}
+.owner-shell {
+  display: grid;
+  grid-template-columns: 235px 1fr;
+  min-height: 100vh;
+}
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 30px 22px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #dce1d8;
+  background: #eef0e8;
+}
+.nav-label {
+  margin-top: 55px;
+}
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.sidebar nav a {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  text-decoration: none;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #52665a;
+  font-size: 0.9rem;
+}
+.sidebar nav a.active {
+  background: #183f34;
+  color: #fff;
+}
+.sidebar-bottom {
+  margin-top: auto;
+  display: grid;
+  gap: 12px;
+  font-size: 0.75rem;
+}
+.sidebar-bottom a {
+  text-decoration: none;
+  padding-left: 10px;
+}
+.owner-content {
+  width: 100%;
+  max-width: 1400px;
+  padding: 38px 44px;
+  min-width: 0;
+}
+.page-title {
+  margin-bottom: 30px;
+}
+.page-title p {
+  font-size: 0.9rem;
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.date-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.date-controls .MuiButton-root {
+  min-width: 40px;
+}
+.date-controls .MuiTextField-root {
+  width: 180px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.stats > .MuiPaper-root {
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.stats span {
+  font-size: 0.8rem;
+  color: #62746a;
+}
+.stats strong {
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+.agenda-list {
+  display: grid;
+  gap: 8px;
+}
+.agenda-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 14px 20px;
+  min-height: 80px;
+}
+.agenda-time {
+  font-size: 1.2rem;
+  font-weight: 700;
+  min-width: 60px;
+}
+.agenda-time small {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #62746a;
+}
+.agenda-person {
+  flex: 1;
+  min-width: 0;
+}
+.agenda-person strong {
+  display: block;
+  font-size: 0.9rem;
+}
+.agenda-person span {
+  display: block;
+  color: #62746a;
+  font-size: 0.78rem;
+}
+.agenda-row.occupied {
+  border-left: 4px solid #183f34;
+}
+.empty {
+  padding: 32px;
+  text-align: center;
+}
+.cancelled {
+  margin-top: 25px;
+  font-size: 0.85rem;
+}
+.cancelled summary,
+details summary {
+  cursor: pointer;
+  padding: 10px 0;
+}
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.editor {
+  padding: 26px;
+  max-width: 950px;
+}
+.two-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.two-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.weekly-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 20px;
+  border-bottom: 1px solid #e1e5de;
+  padding-bottom: 16px;
+}
+.weekly-row > div:first-child {
+  display: flex;
+  flex-direction: column;
+}
+.range-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.range-row .MuiButton-root {
+  min-width: 35px;
+}
+.block-row {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+.client-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.client-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eef0e8;
+  color: #183f34;
+}
+.client-row > div {
+  flex: 1;
+  min-width: 0;
+}
+.client-row strong {
+  display: block;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.client-row span:not(.avatar) {
+  font-size: 0.8rem;
+  color: #62746a;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 24px;
+  font-size: 0.8rem;
+}
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e1e5de;
+  padding: 10px 0;
+  font-size: 0.85rem;
+}
+.history-row small {
+  display: block;
+  color: #62746a;
+  margin-top: 5px;
+}
+@media (max-width: 1050px) {
+  .public-main {
+    gap: 30px;
+  }
+  .owner-content {
+    padding: 30px 24px;
+  }
+  .owner-shell {
+    grid-template-columns: 200px 1fr;
+  }
+  .client-list,
+  .two-panels {
+    grid-template-columns: 1fr;
+  }
+  .stats > .MuiPaper-root {
+    padding: 16px;
+    display: grid;
+    gap: 8px;
+  }
+  .weekly-row {
+    grid-template-columns: 120px 1fr;
+  }
+}
+@media (max-width: 700px) {
+  .public-header {
+    padding: 18px 20px;
+  }
+  .owner-link {
+    font-size: 0.7rem;
+  }
+  .public-main {
+    grid-template-columns: 1fr;
+    padding: 0 18px;
+    margin: 20px auto 35px;
+    gap: 22px;
+  }
+  .intro {
+    padding: 5px 4px;
+  }
+  .intro h1 {
+    font-size: 3.4rem;
+    margin: 14px 0;
+  }
+  .intro p {
+    margin-bottom: 0;
+  }
+  .intro-detail,
+  .barber-line {
+    display: none;
+  }
+  .intro .eyebrow {
+    font-size: 0.57rem;
+    margin-bottom: 10px;
+  }
+  .booking-panel {
+    padding: 22px !important;
+    min-height: 250px;
+  }
+  .public-footer {
+    padding: 18px;
+    gap: 20px;
+  }
+  .public-footer span {
+    max-width: 180px;
+    text-align: right;
+  }
+  .owner-shell {
+    display: block;
+  }
+  .sidebar {
+    height: auto;
+    position: static;
+    padding: 16px;
+    border-right: 0;
+    border-bottom: 1px solid #dce1d8;
+  }
+  .sidebar .brand {
+    font-size: 0.9rem;
+  }
+  .sidebar .brand-symbol {
+    width: 30px;
+    height: 30px;
+  }
+  .nav-label {
+    display: none;
+  }
+  .sidebar nav {
+    flex-direction: row;
+    margin-top: 16px;
+    gap: 5px;
+  }
+  .sidebar nav a {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+  .sidebar-bottom {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    font-size: 0.6rem;
+  }
+  .sidebar-bottom a {
+    display: none;
+  }
+  .sidebar-bottom .MuiButton-root {
+    font-size: 0.72rem;
+  }
+  .owner-content {
+    padding: 25px 16px;
+  }
+  .page-title {
+    margin-bottom: 22px;
+  }
+  .page-title h1 {
+    font-size: 2rem;
+  }
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .toolbar > .MuiButton-root {
+    width: 100%;
+  }
+  .date-controls {
+    width: 100%;
+  }
+  .date-controls .MuiTextField-root {
+    flex: 1;
+    width: auto;
+  }
+  .stats {
+    gap: 8px;
+  }
+  .stats > .MuiPaper-root {
+    padding: 12px;
+  }
+  .stats strong {
+    font-size: 1.4rem;
+  }
+  .stats span {
+    font-size: 0.7rem;
+  }
+  .agenda-row {
+    gap: 10px;
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+  .agenda-time {
+    font-size: 1.05rem;
+    min-width: 49px;
+  }
+  .agenda-person {
+    flex-basis: calc(100% - 65px);
+  }
+  .agenda-row > .MuiChip-root {
+    margin-left: 59px;
+  }
+  .agenda-row > .MuiButton-root {
+    margin-left: auto;
+  }
+  .editor {
+    padding: 20px;
+  }
+  .weekly-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .weekly-row > div:first-child {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .two-fields {
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+  .range-row .MuiTextField-root {
+    min-width: 0;
+  }
+  .client-row {
+    padding: 14px;
+    gap: 10px;
+  }
+  .section-heading h2 {
+    font-size: 1.2rem;
+  }
+  .block-row {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

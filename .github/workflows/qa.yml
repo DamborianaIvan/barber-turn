@@ -1,0 +1,28 @@
+name: QA turnero
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feat/**"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pruebas reales con MongoDB replica set
+        run: npm test
+      - run: npm run build
+      - run: npm run lint
+      - run: npx playwright install --with-deps chromium
+      - name: Flujos y estados de carga en escritorio y móvil
+        run: npm run test:e2e
+      - run: npm audit --audit-level=high
