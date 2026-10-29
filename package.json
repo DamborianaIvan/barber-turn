@@ -1,0 +1,28 @@
+{
+  "name": "barber-turn",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "panel"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "api": "npm run dev -w backend",
+    "dev": "npm run dev -w panel",
+    "build": "npm run build -w panel",
+    "start": "npm start -w backend",
+    "test": "npm test -w backend",
+    "test:e2e": "npm run test:e2e -w panel",
+    "lint": "eslint backend && npm run lint -w panel",
+    "admin:create": "npm run admin:create -w backend",
+    "admin:reset": "npm run admin:reset -w backend"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.1",
+    "eslint": "^9.30.1",
+    "globals": "^16.3.0",
+    "prettier": "^3.9.10"
+  }
+}

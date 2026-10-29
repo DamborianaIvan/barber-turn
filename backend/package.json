@@ -1,0 +1,27 @@
+{
+  "name": "barber-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "admin:create": "node --env-file-if-exists=.env scripts/admin.js create",
+    "admin:reset": "node --env-file-if-exists=.env scripts/admin.js reset"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "libphonenumber-js": "^1.12.0",
+    "luxon": "^3.7.0",
+    "mongoose": "^8.16.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.2.0",
+    "supertest": "^7.1.0"
+  }
+}
