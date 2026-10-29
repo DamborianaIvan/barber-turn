@@ -25,9 +25,15 @@ export async function api<T>(
       ...options.headers,
     },
   });
-  const body = response.status === 204 ? null : await response.json();
+  const body =
+    response.status === 204 ? null : await response.json().catch(() => null);
+  if (response.ok && response.status !== 204 && body === null)
+    throw new ApiError(
+      "El servicio devolvió una respuesta inválida. Intentá nuevamente.",
+      502,
+    );
   if (!response.ok) {
-    if (response.status === 401 && path.startsWith("/admin/"))
+    if (response.status === 401 && path !== "/auth/login")
       window.dispatchEvent(new Event("session-expired"));
     throw new ApiError(
       body?.error?.message || "No se pudo completar la operación",

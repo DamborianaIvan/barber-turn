@@ -666,3 +666,43 @@ details summary {
     transition: none !important;
   }
 }
+@media (max-width: 700px) {
+  .agenda-row {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 74px;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 5px;
+    min-height: 82px;
+  }
+  .agenda-time {
+    grid-column: 1;
+    grid-row: 1/3;
+  }
+  .agenda-person {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .agenda-row > .MuiChip-root {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+    width: fit-content;
+    font-size: 0.65rem;
+    height: 21px;
+  }
+  .agenda-row > .MuiButton-root {
+    grid-column: 3;
+    grid-row: 1/3;
+    margin: 0;
+    padding: 5px;
+    min-width: 0;
+    font-size: 0.74rem;
+  }
+  .agenda-person strong {
+    font-size: 0.8rem;
+  }
+  .agenda-person span {
+    font-size: 0.7rem;
+  }
+}

@@ -22,7 +22,7 @@ jobs:
         run: npm test
       - run: npm run build
       - run: npm run lint
-      - run: npx playwright install --with-deps chromium
+      - run: npm exec -w panel -- playwright install --with-deps chromium
       - name: Flujos y estados de carga en escritorio y móvil
         run: npm run test:e2e
       - run: npm audit --audit-level=high

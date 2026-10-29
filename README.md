@@ -54,7 +54,7 @@ Una modificación de la plantilla **no cambia** los horarios publicados. Para ap
 | `npm audit`            | Auditoría actual de dependencias                                 |
 | `npm start`            | Backend y frontend compilado bajo el mismo origen                |
 
-Las pruebas de integración descargan un binario MongoDB 7.0.24 y crean una base temporal, sin usar la base de desarrollo ni Atlas. Para Playwright: `npx playwright install chromium`. No ejecutar pruebas contra producción.
+Las pruebas de integración descargan un binario MongoDB 7.0.24 y crean una base temporal, sin usar la base de desarrollo ni Atlas. Para Playwright: `npm exec -w panel -- playwright install chromium`. No ejecutar pruebas contra producción.
 
 ## Producción
 

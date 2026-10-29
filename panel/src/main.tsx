@@ -3,7 +3,13 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { PublicBooking } from "./public";
-import { Owner, Login } from "./owner";
+import { Load } from "./ui";
+const Owner = React.lazy(() =>
+  import("./owner").then((m) => ({ default: m.Owner })),
+);
+const Login = React.lazy(() =>
+  import("./owner").then((m) => ({ default: m.Login })),
+);
 import "./style.css";
 const theme = createTheme({
   palette: {
@@ -31,20 +37,28 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<PublicBooking />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin/*" element={<Owner />} />
-          <Route
-            path="*"
-            element={
-              <main className="shell">
-                <h1>Página no encontrada</h1>
-                <a href="/">Volver al inicio</a>
-              </main>
-            }
-          />
-        </Routes>
+        <React.Suspense
+          fallback={
+            <main className="shell">
+              <Load loading />
+            </main>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<PublicBooking />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin/*" element={<Owner />} />
+            <Route
+              path="*"
+              element={
+                <main className="shell">
+                  <h1>Página no encontrada</h1>
+                  <a href="/">Volver al inicio</a>
+                </main>
+              }
+            />
+          </Routes>
+        </React.Suspense>
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>,

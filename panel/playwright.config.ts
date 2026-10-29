@@ -6,7 +6,7 @@ export default defineConfig({
   reporter: "list",
   use: { baseURL: "http://localhost:5174", trace: "retain-on-failure" },
   webServer: {
-    command: "npm run dev",
+    command: "npm run dev -- --host 127.0.0.1",
     url: "http://localhost:5174",
     reuseExistingServer: !process.env.CI,
   },

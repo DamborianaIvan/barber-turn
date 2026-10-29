@@ -303,6 +303,11 @@ async function generationPlan(input, session) {
       }
     }
   }
+  if (candidates.length + retired.length > 5000)
+    throw new ApiError(
+      400,
+      "El período genera demasiados cambios. Publicá un rango más corto (máximo 5000 cambios).",
+    );
   return { data, retired, candidates, affected };
 }
 export async function generate(input, preview = false) {
@@ -328,16 +333,22 @@ export async function generate(input, preview = false) {
       { $set: { enabled: false } },
       { session },
     );
-    for (const candidate of plan.candidates) {
-      // Solo replace explícito reactiva intervalos retirados; append nunca los revive.
-      const existing = await Slot.findOne(candidate).session(session);
-      if (existing) {
-        if (plan.data.replace) {
-          existing.enabled = true;
-          await existing.save({ session });
-        }
-      } else
-        await Slot.create([{ ...candidate, source: "generated" }], { session });
+    if (plan.candidates.length) {
+      await Slot.bulkWrite(
+        plan.candidates.map((candidate) => ({
+          updateOne: {
+            filter: candidate,
+            update: plan.data.replace
+              ? {
+                  $set: { enabled: true },
+                  $setOnInsert: { source: "generated" },
+                }
+              : { $setOnInsert: { enabled: true, source: "generated" } },
+            upsert: true,
+          },
+        })),
+        { session, ordered: true },
+      );
     }
     return summary;
   });

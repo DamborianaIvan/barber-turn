@@ -28,6 +28,7 @@ export function AgendaPage() {
   const [day, setDay] = useState(localDay()),
     [version, setVersion] = useState(0),
     [manual, setManual] = useState(false),
+    [manualSlot, setManualSlot] = useState(""),
     [selected, setSelected] = useState<Booking>();
   const data = useData<Agenda>("/admin/agenda?date=" + day, version);
   const refresh = () => setVersion((v) => v + 1);
@@ -64,7 +65,13 @@ export function AgendaPage() {
           </Button>
           <Button onClick={() => setDay(localDay())}>Hoy</Button>
         </div>
-        <Button variant="contained" onClick={() => setManual(true)}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setManualSlot("");
+            setManual(true);
+          }}
+        >
           + Nueva reserva
         </Button>
       </div>
@@ -179,7 +186,12 @@ export function AgendaPage() {
                     ) : (
                       !blocked &&
                       !past && (
-                        <Button onClick={() => setManual(true)}>
+                        <Button
+                          onClick={() => {
+                            setManualSlot(s._id);
+                            setManual(true);
+                          }}
+                        >
                           Reservar
                         </Button>
                       )
@@ -213,6 +225,7 @@ export function AgendaPage() {
       {manual && (
         <ManualBooking
           day={day}
+          initialSlot={manualSlot}
           onClose={() => setManual(false)}
           onSaved={() => {
             setManual(false);
@@ -235,15 +248,17 @@ export function AgendaPage() {
 }
 function ManualBooking({
   day: onDay,
+  initialSlot,
   onClose,
   onSaved,
 }: {
   day: string;
+  initialSlot: string;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const [day, setDay] = useState(onDay),
-    [slotId, setSlot] = useState(""),
+    [slotId, setSlot] = useState(initialSlot),
     [name, setName] = useState(""),
     [phone, setPhone] = useState(""),
     [busy, setBusy] = useState(false),

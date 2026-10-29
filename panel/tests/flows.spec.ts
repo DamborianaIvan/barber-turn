@@ -40,7 +40,7 @@ test("reserva pública, revisión y confirmación sin scroll horizontal", async 
   });
   await page.goto("/");
   await page.getByRole("button", { name: "10:00", exact: true }).click();
-  await page.getByLabel("Nombre", { exact: true }).fill("Iván Cliente");
+  await page.getByRole("textbox", { name: /^Nombre/ }).fill("Iván Cliente");
   await page.getByLabel("Teléfono con código de área").fill("02266 15 551234");
   await page.getByRole("button", { name: "Revisar reserva" }).click();
   await expect(
@@ -77,7 +77,7 @@ test("carga lenta no muestra vacío; conflicto conserva los datos", async ({
     }),
   ).not.toBeVisible();
   await page.getByRole("button", { name: "10:00", exact: true }).click();
-  await page.getByLabel("Nombre", { exact: true }).fill("Cliente Prueba");
+  await page.getByRole("textbox", { name: /^Nombre/ }).fill("Cliente Prueba");
   await page.getByLabel("Teléfono con código de área").fill("+5492266551234");
   await page.getByRole("button", { name: "Revisar reserva" }).click();
   await page.getByRole("button", { name: "Confirmar mi turno" }).click();
@@ -85,7 +85,7 @@ test("carga lenta no muestra vacío; conflicto conserva los datos", async ({
     page.getByText("El horario ya no está disponible"),
   ).toBeVisible();
   await page.getByRole("button", { name: "10:00", exact: true }).click();
-  await expect(page.getByLabel("Nombre", { exact: true })).toHaveValue(
+  await expect(page.getByRole("textbox", { name: /^Nombre/ })).toHaveValue(
     "Cliente Prueba",
   );
   await expect(

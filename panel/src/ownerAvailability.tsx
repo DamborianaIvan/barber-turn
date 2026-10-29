@@ -25,7 +25,8 @@ const weekdays = [
 ];
 export function AvailabilityPage() {
   const [version, setVersion] = useState(0),
-    [tab, setTab] = useState(0);
+    [tab, setTab] = useState(0),
+    [notice, setNotice] = useState("");
   const state = useData<Settings>("/admin/configuracion", version);
   return (
     <>
@@ -46,6 +47,11 @@ export function AvailabilityPage() {
         <Tab label="Excepciones" />
         <Tab label="Barbería" />
       </Tabs>
+      {notice && (
+        <Alert severity="success" onClose={() => setNotice("")} sx={{ mb: 2 }}>
+          {notice}
+        </Alert>
+      )}
       <Load
         loading={state.loading}
         error={state.error}
@@ -57,7 +63,10 @@ export function AvailabilityPage() {
             key={`${state.data.revision}-${tab}`}
             initial={state.data}
             shopOnly={tab === 3}
-            saved={() => setVersion((v) => v + 1)}
+            saved={() => {
+              setNotice("Configuración guardada.");
+              setVersion((v) => v + 1);
+            }}
           />
         ) : tab === 1 ? (
           <Publish settings={state.data} />
