@@ -13,10 +13,12 @@ const Login = React.lazy(() =>
 import "./style.css";
 const theme = createTheme({
   palette: {
-    primary: { main: "#183f34" },
-    secondary: { main: "#a2512c" },
-    background: { default: "#f5f3ed", paper: "#ffffff" },
-    text: { primary: "#172e28", secondary: "#596a62" },
+    mode: "dark",
+    divider: "#303239",
+    primary: { main: "#d9b77b" },
+    secondary: { main: "#a9b9c8" },
+    background: { default: "#101113", paper: "#1a1c20" },
+    text: { primary: "#f3f1ec", secondary: "#aaaeb7" },
   },
   typography: {
     fontFamily: "Inter, system-ui, -apple-system, sans-serif",
@@ -26,8 +28,9 @@ const theme = createTheme({
   components: {
     MuiButton: {
       defaultProps: { disableElevation: true },
-      styleOverrides: { root: { minHeight: 44 } },
+      styleOverrides: { root: { minHeight: 44, borderRadius: 10, paddingInline: 18 } },
     },
+    MuiOutlinedInput: { styleOverrides: { root: { backgroundColor: "#141619" } } },
     MuiTextField: { defaultProps: { size: "small", fullWidth: true } },
     MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
   },
