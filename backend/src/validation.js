@@ -31,6 +31,7 @@ export const clientInput = z
   .object({
     name,
     phone: phoneSchema,
+    bookingBlocked: z.boolean().optional(),
     notes: z.string().trim().max(1000).default(""),
   })
   .strict();

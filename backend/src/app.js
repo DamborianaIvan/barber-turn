@@ -60,18 +60,19 @@ app.get(
 );
 app.post(
   "/api/public/reservas",
-  rateLimit("reserve-ip", 10),
+  rateLimit("reserve-ip-burst", config.bookingIpBurst, undefined, 60000),
+  rateLimit("reserve-ip-hour", config.bookingIpHourly, undefined, 3600000),
   (req, _res, next) => {
     req.body = bookingInput.parse(req.body);
     next();
   },
-  rateLimit("reserve-phone", 5, (req) => req.body.phone, 3600000),
+  rateLimit("reserve-phone", config.bookingPhoneHourly, (req) => req.body.phone, 3600000),
   async (req, res) =>
     res
       .status(201)
       .json(await agenda.reserve(req.body, req.get("idempotency-key"))),
 );
-app.post("/api/public/turno/consultar", rateLimit("manage-read", 60), async (req, res) =>
+app.post("/api/public/turno/consultar", rateLimit("manage-read", 10), async (req, res) =>
   res.json(await agenda.manageReservation(req.body)));
 app.post("/api/public/turno/modificar", rateLimit("manage-write", 10), async (req, res) =>
   res.json(await agenda.manageReservation(req.body, true)));

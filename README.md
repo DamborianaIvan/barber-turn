@@ -83,18 +83,43 @@ Los cambios tienen fecha de vigencia y preservan las reservas aceptadas explíci
 La plantilla anterior continúa aplicándose antes de esa fecha. Un cambio nuevo desde una fecha
 reemplaza cualquier programación de horarios posterior a ella.
 
-Las nuevas reservas públicas entregan un enlace /mi-turno#TOKEN. El token se deriva con HMAC
-usando el secreto del servidor y el identificador de la reserva; no es adivinable a partir de ese ID.
-Solo su hash se guarda en la reserva; no se almacena en texto plano en idempotencia.
-El fragmento no viaja en URLs HTTP ni referencias: se envía en el cuerpo de las operaciones,
-que no se registra. No agregar analítica que capture fragmentos ni cuerpos de estas solicitudes.
-La consulta devuelve únicamente horario, estado y revisión, sin datos de clientes.
+Las nuevas reservas públicas entregan un código de gestión de 12 caracteres
+agrupados en tres bloques. Se deriva mediante HMAC del secreto del servidor y del ID
+con 60 bits de entropía; no es consecutivo ni deducible del ID. Solo se almacena su hash,
+con índice único disperso para impedir colisiones. Los reintentos idempotentes devuelven
+el mismo código sin almacenarlo en texto plano.
 
-Cambios/cancelaciones disponibles hasta el inicio del turno, sin margen adicional en esta versión.
-Abrir el enlace no cancela; se exige una acción explícita. La reprogramación es transaccional
-y mantiene el original ante conflicto. Cancelar invalida el enlace; turnos iniciados o finalizados
-no admiten gestión. Tras reprogramar se conserva el mismo enlace. Rotar ABUSE_SECRET invalida
-los enlaces anteriores. Reservas anteriores y manuales se gestionan con el dueño.
-No se envía correo ni WhatsApp automáticamente. Quien tenga el enlace controla esa reserva.
+En la web pública, Consultar o modificar mi turno permite ingresarlo con o sin guiones,
+espacios o minúsculas. Se envía únicamente en cuerpos POST, sin datos personales en
+las respuestas ni códigos en URLs o logs. Las consultas y cambios se limitan cada uno
+a 10 intentos por 15 minutos e IP. Los enlaces antiguos siguen admitidos para compatibilidad.
+
+Se puede reprogramar o cancelar antes del inicio. Cancelar requiere confirmación e
+invalida el código; una reprogramación fallida conserva el turno original. Reprogramar
+mantiene el mismo código. Reservas manuales y anteriores sin credencial se gestionan
+con el dueño. No hay envío de correo ni WhatsApp automático. Quien tenga el código
+controla la reserva; guardarlo mediante copia o captura. Rotar ABUSE_SECRET invalida
+las credenciales anteriores. No añadir analítica que capture los códigos o cuerpos POST.
 
 Validación de esta entrega: revisión de código; sin ejecutar tests, build ni lint por indicación del usuario.
+## Protección de reservas públicas
+
+Valores iniciales configurables en backend/.env: 5 intentos por minuto e IP,
+20 por hora e IP y 5 por hora y teléfono normalizado. Se cuentan también errores
+y reintentos; las ventanas son fijas y el rechazo devuelve Retry-After.
+Las consultas públicas conservan el límite compartido de 240 por 15 minutos e IP.
+Configurar TRUST_PROXY según el proxy real del alojamiento; no confiar en cabeceras arbitrarias.
+
+Cada teléfono puede tener hasta 2 turnos confirmados futuros para reservar online.
+Se cuentan también los turnos manuales y los asociados a su ficha. La comprobación
+ocurre dentro de la transacción de agenda; cancelar libera cupo y repetir una clave
+idempotente ya guardada devuelve la confirmación original, sujeto al límite de intentos.
+El dueño puede superar este cupo mediante reservas manuales, conservando las restricciones de horario.
+
+En Clientes → Editar se puede bloquear/desbloquear la reserva online de un número.
+No cancela reservas existentes, no publica el motivo y permite atención manual.
+Para cambiar el teléfono bloqueado hay que guardar antes el desbloqueo.
+El rechazo público no distingue bloqueo de límite alcanzado ni expone historial.
+Sin verificar teléfono, una persona aún puede usar otros números o conexiones.
+No se incorporan SMS, WhatsApp automático ni CAPTCHA.
+>>>>>>> 1517654723fc945fcfcce9ed7274db640b8e42c9

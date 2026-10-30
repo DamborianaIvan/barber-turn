@@ -1,6 +1,8 @@
 import { useState } from "react";
 import {
   Alert,
+  Checkbox,
+  FormControlLabel,
   Button,
   Dialog,
   DialogActions,
@@ -60,7 +62,7 @@ export function ClientsPage() {
                 </span>
                 <div>
                   <strong>{c.name}</strong>
-                  <span>{c.phone}</span>
+                  <span>{c.phone}{c.bookingBlocked ? " · Reservas online bloqueadas" : ""}</span>
                 </div>
                 <Button onClick={() => setSelected(c._id)}>Ver ficha</Button>
               </Paper>
@@ -144,6 +146,9 @@ function ClientDetail({
           {state.data && (
             <Stack spacing={2}>
               <h2>{state.data.client.name}</h2>
+              {state.data.client.bookingBlocked && <Alert severity="warning">
+                Este número no puede crear reservas online. Sus turnos existentes se conservan.
+              </Alert>}
               <a
                 href={whatsapp(state.data.client.phone)}
                 target="_blank"
@@ -234,6 +239,7 @@ function ClientEditor({
 }) {
   const [name, setName] = useState(initial?.name || ""),
     [phone, setPhone] = useState(initial?.phone || ""),
+    [bookingBlocked, setBookingBlocked] = useState(initial?.bookingBlocked || false),
     [notes, setNotes] = useState(initial?.notes || ""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
@@ -253,6 +259,7 @@ function ClientEditor({
                 name,
                 phone,
                 notes,
+                bookingBlocked,
                 ...(initial ? { revision: initial.revision } : {}),
               },
             );
@@ -275,6 +282,7 @@ function ClientEditor({
               onChange={(e) => setName(e.target.value)}
             />
             <TextField
+              disabled={Boolean(initial?.bookingBlocked)}
               label="Teléfono con código de área"
               type="tel"
               required
@@ -282,6 +290,11 @@ function ClientEditor({
               inputProps={{ maxLength: 40 }}
               onChange={(e) => setPhone(e.target.value)}
             />
+            <FormControlLabel control={<Checkbox checked={bookingBlocked}
+              onChange={(e) => setBookingBlocked(e.target.checked)} />}
+              label="Bloquear nuevas reservas online de este número" />
+            <p className="small">No cancela turnos existentes. Podés seguir reservando manualmente.
+              Para cambiar un número bloqueado, guardá primero el desbloqueo.</p>
             <TextField
               label="Notas internas"
               multiline
