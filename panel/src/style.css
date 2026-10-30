@@ -166,7 +166,7 @@ summary:focus-visible {
 }
 .time-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 9px;
 }
 .chosen {
@@ -749,4 +749,63 @@ details summary {
   .owner-link { flex-shrink: 0; padding: 8px; }
   .booking-panel { min-height: 300px; }
   .public-main { align-items: stretch; }
+}
+
+/* Public reservation: full-width slots and editorial introduction. */
+.time-grid {
+  width: 100%;
+  align-self: stretch;
+  justify-items: stretch;
+}
+.time-grid .MuiButton-root {
+  width: 100%;
+  min-height: 48px;
+  font-variant-numeric: tabular-nums;
+}
+.booking-intro {
+  justify-content: flex-start;
+  padding: 32px;
+  background: linear-gradient(145deg, #22252a, #15171b 75%);
+  border-color: #363a42;
+  border-top: 3px solid #d9b77b;
+}
+.intro-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.intro-topline .eyebrow { margin: 0; color: #d9b77b; }
+.intro-mark { color: #7e8189; font-size: 1.7rem; font-weight: 800; }
+.booking-intro .intro-copy { margin: 36px 0 28px; }
+.booking-intro h1 {
+  font-size: clamp(2.8rem, 4.5vw, 4.4rem);
+  line-height: 1.08;
+  letter-spacing: -.06em;
+  margin: 0 0 22px;
+}
+.booking-intro h1 em { color: #d9b77b; }
+.booking-intro .intro-copy p { font-size: .95rem; margin: 0; }
+.booking-steps { list-style: none; padding: 0; margin: auto 0 0; }
+.booking-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 17px 0;
+  border-top: 1px solid #33363d;
+}
+.booking-steps li > span { font-size: .75rem; color: #d9b77b; padding-top: 3px; font-variant-numeric: tabular-nums; }
+.booking-steps strong { font-size: .9rem; font-weight: 600; }
+.booking-intro .booking-steps p { font-size: .78rem; margin: 3px 0 0; line-height: 1.5; }
+.booking-intro .intro-location { font-size: .8rem; margin: 16px 0 0; color: #d0d2d8; overflow-wrap: anywhere; }
+@media (max-width: 700px) {
+  .booking-intro { padding: 24px; }
+  .booking-intro .intro-copy { margin: 20px 0 10px; }
+  .booking-intro h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); margin-bottom: 14px; }
+  .booking-steps li { padding: 10px 0; }
+  .booking-intro .booking-steps p { display: none; }
+  .booking-steps strong { font-size: .8rem; }
+}
+@media (max-width: 360px) {
+  .time-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
