@@ -60,12 +60,13 @@ app.get(
 );
 app.post(
   "/api/public/reservas",
-  rateLimit("reserve-ip", 10),
+  rateLimit("reserve-ip-burst", config.bookingIpBurst, undefined, 60000),
+  rateLimit("reserve-ip-hour", config.bookingIpHourly, undefined, 3600000),
   (req, _res, next) => {
     req.body = bookingInput.parse(req.body);
     next();
   },
-  rateLimit("reserve-phone", 5, (req) => req.body.phone, 3600000),
+  rateLimit("reserve-phone", config.bookingPhoneHourly, (req) => req.body.phone, 3600000),
   async (req, res) =>
     res
       .status(201)

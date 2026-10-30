@@ -16,6 +16,7 @@ export type Client = {
   name: string;
   phone: string;
   notes: string;
+  bookingBlocked?: boolean;
   revision: number;
 };
 export type Booking = {
