@@ -75,27 +75,21 @@ export function PublicBooking() {
       </header>
       <div style={{ textAlign: "center", padding: "12px 16px 0" }}><Button component={Link} to="/mi-turno">Consultar o modificar mi turno</Button></div>
       <main className="public-main">
-        <section className="intro">
-          <span className="eyebrow">BARBERÍA · RESERVAS ONLINE</span>
-          <h1>
-            Tu corte.
-            <br />
-            <em>Tu horario.</em>
-          </h1>
-          <p>
-            Elegí tu turno y vení tranquilo.
-            <br />
-            Elegí el día. Nosotros te esperamos.
-          </p>
-          <div className="intro-detail">
-            <span>01 / Elegí</span>
-            <span>02 / Reservá</span>
-            <span>03 / Vení</span>
+        <section className="intro booking-intro">
+          <div className="intro-topline">
+            <span className="eyebrow">BARBERÍA · RESERVAS ONLINE</span>
+            <span className="intro-mark" aria-hidden="true">B/</span>
           </div>
-          {shop.data?.address && (
-            <p className="address">↳ {shop.data.address}</p>
-          )}
-          <div className="barber-line" aria-hidden="true" />
+          <div className="intro-copy">
+            <h1>Buen corte.<br /><em>Cero vueltas.</em></h1>
+            <p>Tu próximo turno empieza acá.<br />Elegí un horario y reservá a tu ritmo.</p>
+          </div>
+          <ol className="booking-steps" aria-label="Cómo reservar">
+            <li><span>01</span><div><strong>Elegí tu horario</strong><p>El día y la hora que te queden bien.</p></div></li>
+            <li><span>02</span><div><strong>Confirmá tu turno</strong><p>Solo necesitamos nombre y teléfono.</p></div></li>
+            <li><span>03</span><div><strong>Guardá tu código</strong><p>Usalo para cambiar o cancelar tu reserva.</p></div></li>
+          </ol>
+          {shop.data?.address && <p className="intro-location">↗ {shop.data.address}</p>}
         </section>
         <Paper component="section" className="booking-panel" variant="outlined">
           <Load loading={shop.loading} error={shop.error} />
@@ -239,6 +233,7 @@ export function PublicBooking() {
                           {slots.data.map((s) => (
                             <Button
                               key={s.id}
+                              fullWidth
                               variant={
                                 selected?.id === s.id ? "contained" : "outlined"
                               }
