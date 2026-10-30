@@ -75,16 +75,16 @@ export function PublicBooking() {
       </header>
       <main className="public-main">
         <section className="intro">
-          <span className="eyebrow">TU PRÓXIMO CORTE, A TU TIEMPO</span>
+          <span className="eyebrow">BARBERÍA · RESERVAS ONLINE</span>
           <h1>
-            Un buen corte.
+            Tu corte.
             <br />
             <em>Tu horario.</em>
           </h1>
           <p>
             Elegí tu turno y vení tranquilo.
             <br />
-            Sin llamadas, sin vueltas.
+            Elegí el día. Nosotros te esperamos.
           </p>
           <div className="intro-detail">
             <span>01 / Elegí</span>
@@ -151,7 +151,7 @@ export function PublicBooking() {
               <>
                 <div className="section-heading">
                   <div>
-                    <span className="eyebrow">RESERVÁ EN UN MINUTO</span>
+                    <span className="eyebrow">TU PRÓXIMA VISITA</span>
                     <h2>
                       {review ? "Revisá tu turno" : "Encontrá tu horario"}
                     </h2>
