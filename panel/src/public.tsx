@@ -25,7 +25,7 @@ export function PublicBooking() {
     [review, setReview] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [done, setDone] = useState<Slot>();
+    [done, setDone] = useState<Slot & { managementCode?: string }>();
   const attempt = useRef<{ fingerprint: string; key: string } | undefined>(
     undefined,
   );
@@ -43,7 +43,7 @@ export function PublicBooking() {
     setBusy(true);
     setError("");
     try {
-      const result = await send<Slot>(
+      const result = await send<Slot & { managementCode?: string }>(
         "/public/reservas",
         "POST",
         body,
@@ -73,6 +73,7 @@ export function PublicBooking() {
           Acceso del dueño ↗
         </Link>
       </header>
+      <div style={{ textAlign: "center", padding: "12px 16px 0" }}><Button component={Link} to="/mi-turno">Consultar o modificar mi turno</Button></div>
       <main className="public-main">
         <section className="intro">
           <span className="eyebrow">BARBERÍA · RESERVAS ONLINE</span>
@@ -120,6 +121,20 @@ export function PublicBooking() {
                   Tu reserva quedó guardada. Podés guardar una captura de esta
                   confirmación.
                 </Alert>
+                {done.managementCode && <Paper variant="outlined" className="review">
+                  <h3>Guardá tu código de gestión</h3>
+                  <p>Desde acá podés cambiar o cancelar este turno. Quien tenga el código podrá administrarlo.</p>
+                  <TextField label="Código de gestión" value={done.managementCode.match(/.{1,4}/g)?.join("-") || ""}
+                    slotProps={{ input: { readOnly: true } }}
+                    onFocus={(e) => e.target.select()} />
+                  <Button onClick={async () => {
+                    try { await navigator.clipboard.writeText(done.managementCode!.match(/.{1,4}/g)!.join("-"));
+                      setError("Código copiado."); }
+                    catch { setError("Seleccioná el código para copiarlo manualmente."); }
+                  }}>Copiar código</Button>
+                  <Button href="/mi-turno">Administrar mi turno</Button>
+                  {error && <p role="status">{error}</p>}
+                </Paper>}
                 {shop.data.phone ? (
                   <Button
                     href={whatsapp(shop.data.phone)}

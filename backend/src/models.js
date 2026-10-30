@@ -30,6 +30,9 @@ export const Settings = model("Settings", {
   duration: { type: Number, default: 30 },
   horizon: { type: Number, default: 30 },
   revision: { type: Number, default: 0 },
+  autoPublish: { type: Boolean, default: false },
+  publishedThrough: String,
+  schedules: { type: Schema.Types.Mixed, default: () => [] },
   weekly: {
     type: Schema.Types.Mixed,
     default: () =>
@@ -62,6 +65,8 @@ export const Client = model("Client", {
   revision: { type: Number, default: 0 },
 });
 export const Booking = model("Booking", {
+  managementCodeHash: { type: String, select: false, unique: true, sparse: true },
+  managementHash: { type: String, select: false, index: true },
   slot: { type: Schema.Types.ObjectId, ref: "Slot", required: true },
   client: { type: Schema.Types.ObjectId, ref: "Client", required: true },
   name: String,

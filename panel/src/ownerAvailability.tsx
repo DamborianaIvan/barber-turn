@@ -4,14 +4,13 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  MenuItem,
   Paper,
   Stack,
   Tab,
   Tabs,
   TextField,
 } from "@mui/material";
-import { addDays, fullDate, hour, localDay, send, useData } from "./api";
+import { addDays, fullDate, hour, localDay, ApiError, send, useData } from "./api";
 import { Load, PageTitle } from "./ui";
 import type { Agenda, Settings } from "./types";
 const weekdays = [
@@ -33,7 +32,7 @@ export function AvailabilityPage() {
       <PageTitle
         eyebrow="UNA AGENDA A TU MEDIDA"
         title="Disponibilidad"
-        description="Definí cómo trabajás y publicá los horarios que tus clientes pueden reservar."
+        description="Configurá tu semana y mantené tus turnos disponibles automáticamente."
       />
       <Tabs
         value={tab}
@@ -42,8 +41,7 @@ export function AvailabilityPage() {
         scrollButtons="auto"
         sx={{ mb: 3 }}
       >
-        <Tab label="Horarios habituales" />
-        <Tab label="Publicar agenda" />
+        <Tab label="Mis horarios" />
         <Tab label="Excepciones" />
         <Tab label="Barbería" />
       </Tabs>
@@ -58,18 +56,16 @@ export function AvailabilityPage() {
         retry={() => setVersion((v) => v + 1)}
       />
       {state.data &&
-        (tab === 0 || tab === 3 ? (
+        (tab === 0 || tab === 2 ? (
           <SettingsForm
             key={`${state.data.revision}-${tab}`}
             initial={state.data}
-            shopOnly={tab === 3}
+            shopOnly={tab === 2}
             saved={() => {
               setNotice("Configuración guardada.");
               setVersion((v) => v + 1);
             }}
           />
-        ) : tab === 1 ? (
-          <Publish settings={state.data} />
         ) : (
           <Exceptions />
         ))}
@@ -85,7 +81,10 @@ function SettingsForm({
   shopOnly: boolean;
   saved: () => void;
 }) {
-  const [value, setValue] = useState(initial),
+  const [effectiveFrom, setEffectiveFrom] = useState(localDay()),
+    [preserve, setPreserve] = useState(false),
+    [conflicts, setConflicts] = useState<{ start: string; end: string }[]>([]),
+    [value, setValue] = useState(initial),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   function ranges(day: string, next: [string, string][]) {
@@ -116,10 +115,15 @@ function SettingsForm({
               horizon,
               weekly,
               revision,
+              ...(!shopOnly ? { effectiveFrom, preserveReservations: preserve } : {}),
             });
             saved();
           } catch (e) {
             setError((e as Error).message);
+            if (e instanceof ApiError && e.status === 409) {
+              const details = e.details as { conflicts?: { start: string; end: string }[] };
+              setConflicts(details?.conflicts || []);
+            }
           } finally {
             setBusy(false);
           }
@@ -155,10 +159,21 @@ function SettingsForm({
           ) : (
             <>
               <Alert severity="info">
-                Guardar cambia la plantilla. Los turnos ya publicados se
-                conservan. Aplicá los nuevos horarios desde “Publicar agenda”,
-                eligiendo una fecha de inicio.
+                Guardá tu semana para habilitar las reservas. El sistema agrega
+                nuevos días automáticamente. Los cambios actualizan los horarios libres
+                desde la fecha elegida; nunca cancelan reservas existentes.
               </Alert>
+              <TextField label="Aplicar horarios desde" type="date" value={effectiveFrom}
+                inputProps={{ min: localDay(), max: addDays(localDay(), value.horizon - 1) }}
+                slotProps={{ inputLabel: { shrink: true } }}
+                onChange={(e) => { setEffectiveFrom(e.target.value); setPreserve(false); setConflicts([]); }} />
+              {conflicts.length > 0 && <Alert severity="warning">
+                Hay reservas en este período:
+                <ul>{conflicts.map((b, i) => <li key={i}>{fullDate(b.start)} · {hour(b.start)}–{hour(b.end)}</li>)}</ul>
+                <FormControlLabel control={<Checkbox checked={preserve} onChange={(e) => setPreserve(e.target.checked)} />}
+                  label="Conservar estas reservas con su horario y duración originales" />
+                <p>Para cambiarlas, reprogramalas desde Agenda y volvé a guardar.</p>
+              </Alert>}
               <div className="two-fields">
                 <TextField
                   label="Duración de cada turno (minutos)"
@@ -270,162 +285,10 @@ function SettingsForm({
             disabled={busy}
             sx={{ alignSelf: "start" }}
           >
-            {busy ? "Guardando…" : "Guardar configuración"}
+            {busy ? "Guardando…" : (shopOnly ? "Guardar datos" : "Guardar y habilitar turnos")}
           </Button>
         </Stack>
       </form>
-    </Paper>
-  );
-}
-type Preview = {
-  create: number;
-  retire: number;
-  conflicts: { id: string; start: string; end: string }[];
-};
-function Publish({ settings }: { settings: Settings }) {
-  const [from, setFrom] = useState(localDay()),
-    [to, setTo] = useState(addDays(localDay(), settings.horizon - 1)),
-    [replace, setReplace] = useState(false),
-    [preserve, setPreserve] = useState(false),
-    [preview, setPreview] = useState<Preview>(),
-    [error, setError] = useState(""),
-    [success, setSuccess] = useState(""),
-    [busy, setBusy] = useState(false);
-  const input = {
-    from,
-    to,
-    replace,
-    preserveReservations: preserve,
-    settingsRevision: settings.revision,
-  };
-  async function run(apply = false) {
-    setBusy(true);
-    setError("");
-    setSuccess("");
-    try {
-      const result = await send<Preview>(
-        "/admin/disponibilidad/" + (apply ? "generar" : "previsualizar"),
-        "POST",
-        input,
-      );
-      if (apply) {
-        setSuccess(
-          "Disponibilidad publicada. Las reservas conservan sus horarios.",
-        );
-        setPreview(undefined);
-      } else setPreview(result);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <Paper variant="outlined" className="editor">
-      <Stack spacing={2}>
-        <h2>Publicá un período</h2>
-        <p>
-          Se usarán tus horarios habituales y turnos de {settings.duration}{" "}
-          minutos. Los bloqueos siempre se respetan.
-        </p>
-        {error && <Alert severity="error">{error}</Alert>}
-        {success && <Alert severity="success">{success}</Alert>}
-        <div className="two-fields">
-          <TextField
-            label="Desde / fecha de vigencia"
-            type="date"
-            value={from}
-            inputProps={{
-              min: localDay(),
-              max: addDays(localDay(), settings.horizon - 1),
-            }}
-            slotProps={{ inputLabel: { shrink: true } }}
-            onChange={(e) => {
-              setFrom(e.target.value);
-              setPreview(undefined);
-            }}
-          />
-          <TextField
-            label="Hasta inclusive"
-            type="date"
-            value={to}
-            inputProps={{
-              min: from,
-              max: addDays(localDay(), settings.horizon - 1),
-            }}
-            slotProps={{ inputLabel: { shrink: true } }}
-            onChange={(e) => {
-              setTo(e.target.value);
-              setPreview(undefined);
-            }}
-          />
-        </div>
-        <TextField
-          select
-          label="Qué hacer con los horarios actuales"
-          value={replace ? "replace" : "append"}
-          onChange={(e) => {
-            setReplace(e.target.value === "replace");
-            setPreview(undefined);
-            setPreserve(false);
-          }}
-        >
-          <MenuItem value="append">Agregar horarios faltantes</MenuItem>
-          <MenuItem value="replace">
-            Reemplazar horarios futuros libres del período
-          </MenuItem>
-        </TextField>
-        <Button
-          variant="outlined"
-          disabled={busy || !from || !to}
-          onClick={() => run()}
-        >
-          Previsualizar cambios
-        </Button>
-        {preview && (
-          <Paper className="review" variant="outlined">
-            <p>
-              <strong>{preview.create}</strong> horarios para publicar ·{" "}
-              <strong>{preview.retire}</strong> horarios para retirar
-            </p>
-            {preview.conflicts.length > 0 && (
-              <>
-                <Alert severity="warning">
-                  Hay {preview.conflicts.length} reservas en el período. No se
-                  cambiarán automáticamente.
-                </Alert>
-                <ul>
-                  {preview.conflicts.map((b) => (
-                    <li key={b.id}>
-                      {fullDate(b.start)} · {hour(b.start)}–{hour(b.end)}
-                    </li>
-                  ))}
-                </ul>
-                <FormControlLabel
-                  label="Conservar estas reservas como excepciones con su duración original"
-                  control={
-                    <Checkbox
-                      checked={preserve}
-                      onChange={(e) => setPreserve(e.target.checked)}
-                    />
-                  }
-                />
-                <p className="small">
-                  Si necesitás cambiarlas, reprogramalas o cancelalas desde
-                  Agenda y volvé a previsualizar.
-                </p>
-              </>
-            )}
-            <Button
-              variant="contained"
-              disabled={busy || (preview.conflicts.length > 0 && !preserve)}
-              onClick={() => run(true)}
-            >
-              {busy ? "Publicando…" : "Aplicar y publicar"}
-            </Button>
-          </Paper>
-        )}
-      </Stack>
     </Paper>
   );
 }

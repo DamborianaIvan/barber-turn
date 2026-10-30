@@ -25,6 +25,14 @@ import {
 } from "./validation.js";
 import { config } from "./config.js";
 import { digest } from "./security.js";
+// 60 pseudorandom bits; stable for idempotent reservation retries.
+const managementCode = (bookingId) => {
+  const alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  let bits = BigInt(`0x${digest(`management-code:${bookingId}`).slice(0, 15)}`);
+  let code = "";
+  for (let i = 0; i < 12; i++) { code = alphabet[Number(bits & 31n)] + code; bits >>= 5n; }
+  return code;
+};
 const conflict = (message, details) =>
   new ApiError(409, message, "AGENDA_CONFLICT", details);
 const publicSlot = (s) => ({ id: String(s._id), start: s.start, end: s.end });
@@ -40,6 +48,7 @@ export async function shop() {
   };
 }
 export async function availability(day) {
+  await ensurePublished();
   const s = await Settings.findById("shop");
   validateFutureDay(day, s.horizon);
   const { start, end } = dayBounds(day);
@@ -85,7 +94,7 @@ export async function reserve(input, key, source = "public") {
     throw new ApiError(400, "Falta un identificador válido del intento");
   const requestId = digest(`${source}:${key}`),
     fingerprint = digest(JSON.stringify(input));
-  return transaction(async (session) => {
+  const result = await transaction(async (session) => {
     const prior = await Request.findById(requestId).session(session);
     if (prior) {
       if (prior.fingerprint !== fingerprint)
@@ -125,11 +134,15 @@ export async function reserve(input, key, source = "public") {
       ],
       { session },
     );
+    if (source === "public") {
+      booking.managementCodeHash = digest(managementCode(booking._id));
+      await booking.save({ session });
+    }
     await Event.create(
       [{ booking: booking._id, action: "creado", actor: source }],
       { session },
     );
-    const response = { start: s.start, end: s.end, status: "confirmado" };
+    const response = { start: s.start, end: s.end, status: "confirmado", bookingId: String(booking._id) };
     await Request.create(
       [
         {
@@ -143,8 +156,12 @@ export async function reserve(input, key, source = "public") {
     );
     return response;
   });
+  const { bookingId, ...response } = result;
+  return { ...response, ...(source === "public" && bookingId
+    ? { managementCode: managementCode(bookingId) } : {}) };
 }
 export async function agenda(day) {
+  await ensurePublished();
   const { start, end } = dayBounds(day);
   const [slots, blocks, bookings] = await Promise.all([
     Slot.find({ start: { $gte: start, $lt: end }, enabled: true })
@@ -235,15 +252,54 @@ export async function changeBooking(bookingId, input) {
   });
 }
 export async function saveSettings(input) {
-  const data = settingsInput.parse(input);
+  const { effectiveFrom, preserveReservations, ...fields } = z.object({
+    ...settingsInput.shape,
+    effectiveFrom: date.optional(),
+    preserveReservations: z.boolean().optional(),
+  }).strict().parse(input);
+  const data = settingsInput.parse(fields);
   return transaction(async (session) => {
     const s = await Settings.findById("shop").session(session);
     if (s.revision !== data.revision)
       throw conflict("La configuración cambió. Recargá la página.");
-    // La plantilla no cambia horarios ya publicados. Su aplicación se previsualiza.
+    if (!effectiveFrom && (s.duration !== data.duration || s.horizon !== data.horizon ||
+        JSON.stringify(s.weekly) !== JSON.stringify(data.weekly)))
+      throw new ApiError(400, "Elegí desde qué fecha aplicar los horarios.");
+    if (effectiveFrom) {
+      validateFutureDay(effectiveFrom, data.horizon);
+      const history = s.schedules?.length ? s.schedules : [
+        { from: "1970-01-01", weekly: s.weekly, duration: s.duration },
+      ];
+      s.schedules = [...history.filter((entry) => entry.from < effectiveFrom),
+        { from: effectiveFrom, weekly: data.weekly, duration: data.duration }];
+      s.autoPublish = true;
+    }
     Object.assign(s, data, { revision: s.revision + 1 });
     await s.save({ session });
+    if (effectiveFrom) {
+      const to = DateTime.now().setZone(ZONE).plus({ days: s.horizon - 1 }).toISODate();
+      await generateInSession({ from: effectiveFrom, to, replace: true,
+        preserveReservations: Boolean(preserveReservations), settingsRevision: s.revision }, false, session);
+      s.publishedThrough = to;
+      await s.save({ session });
+    }
     return s;
+  });
+}
+export async function ensurePublished() {
+  const settings = await Settings.findById("shop");
+  if (!settings?.autoPublish) return;
+  const now = DateTime.now().setZone(ZONE);
+  const to = now.plus({ days: settings.horizon - 1 }).toISODate();
+  if (settings.publishedThrough >= to) return;
+  await transaction(async (session) => {
+    const s = await Settings.findById("shop").session(session);
+    const end = DateTime.now().setZone(ZONE).plus({ days: s.horizon - 1 }).toISODate();
+    if (!s.autoPublish || s.publishedThrough >= end) return;
+    await generateInSession({ from: DateTime.now().setZone(ZONE).toISODate(), to: end,
+      replace: false, preserveReservations: true, settingsRevision: s.revision }, false, session);
+    s.publishedThrough = end;
+    await s.save({ session });
   });
 }
 const generationInput = z
@@ -295,15 +351,17 @@ async function generationPlan(input, session) {
     day.toJSDate() < end;
     day = day.plus({ days: 1 })
   ) {
-    for (const [a, b] of settings.weekly[day.weekday] || []) {
+    const template = [...(settings.schedules || [])].reverse()
+      .find((entry) => entry.from <= day.toISODate()) || settings;
+    for (const [a, b] of template.weekly[day.weekday] || []) {
       let cursor = DateTime.fromJSDate(localInstant(day.toISODate(), a), {
         zone: ZONE,
       });
       const limit = localInstant(day.toISODate(), b);
-      while (cursor.plus({ minutes: settings.duration }).toJSDate() <= limit) {
+      while (cursor.plus({ minutes: template.duration }).toJSDate() <= limit) {
         const item = {
           start: cursor.toJSDate(),
-          end: cursor.plus({ minutes: settings.duration }).toJSDate(),
+          end: cursor.plus({ minutes: template.duration }).toJSDate(),
         };
         if (
           item.start > new Date() &&
@@ -312,7 +370,7 @@ async function generationPlan(input, session) {
           )
         )
           candidates.push(item);
-        cursor = cursor.plus({ minutes: settings.duration });
+        cursor = cursor.plus({ minutes: template.duration });
       }
     }
   }
@@ -324,7 +382,9 @@ async function generationPlan(input, session) {
   return { data, retired, candidates, affected };
 }
 export async function generate(input, preview = false) {
-  return transaction(async (session) => {
+  return transaction((session) => generateInSession(input, preview, session));
+}
+async function generateInSession(input, preview, session) {
     const plan = await generationPlan(input, session);
     const summary = {
       create: plan.candidates.length,
@@ -364,7 +424,6 @@ export async function generate(input, preview = false) {
       );
     }
     return summary;
-  });
 }
 export async function addSlot(input) {
   const data = z.object({ date, time }).strict().parse(input);
@@ -460,5 +519,45 @@ export async function saveClient(input, clientId) {
     Object.assign(c, data, { revision: c.revision + 1 });
     await c.save({ session });
     return c;
+  });
+}
+
+const managementInput = z.object({ token: z.string().max(100).transform((v) =>
+  /^[a-f0-9]{64}$/.test(v) ? v : v.replace(/[\s-]/g, "").toUpperCase())
+  .refine((v) => /^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{12}$/.test(v) || /^[a-f0-9]{64}$/.test(v)) });
+async function managedBooking(token, session) {
+  const booking = await Booking.findOne({ ...(token.length === 64 ? { managementHash: digest(token) } : { managementCodeHash: digest(token) }),
+    status: "confirmado", start: { $gt: new Date() } }).session(session);
+  if (!booking) throw new ApiError(404,
+    "El código no está disponible. Contactá a la barbería si necesitás ayuda.", "MANAGEMENT_UNAVAILABLE");
+  return booking;
+}
+export async function manageReservation(input, mutate = false) {
+  const data = (mutate ? managementInput.extend({
+    revision: z.number().int().nonnegative(),
+    action: z.enum(["cancel", "reschedule"]), slotId: id.optional(),
+  }) : managementInput).strict().parse(input);
+  return transaction(async (session) => {
+    const b = await managedBooking(data.token, session);
+    if (mutate) {
+      if (b.revision !== data.revision) throw conflict("El turno cambió. Volvé a consultar tu código.");
+      const from = { start: b.start, end: b.end, slot: b.slot, status: b.status };
+      if (data.action === "cancel") {
+        if (data.slotId) throw new ApiError(400, "Solicitud inválida");
+        b.status = "cancelado";
+        b.managementHash = undefined;
+        b.managementCodeHash = undefined;
+      } else {
+        if (!data.slotId) throw new ApiError(400, "Elegí un horario");
+        const slot = await validSlot(data.slotId, session, b._id);
+        b.slot = slot._id; b.start = slot.start; b.end = slot.end;
+      }
+      b.revision++;
+      await b.save({ session });
+      await Event.create([{ booking: b._id, actor: "public", action:
+        data.action === "cancel" ? "cancelado" : "reprogramado", from,
+        to: { start: b.start, end: b.end, slot: b.slot, status: b.status } }], { session });
+    }
+    return { start: b.start, end: b.end, status: b.status, revision: b.revision };
   });
 }
