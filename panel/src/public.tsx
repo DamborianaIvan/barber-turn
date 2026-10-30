@@ -25,7 +25,7 @@ export function PublicBooking() {
     [review, setReview] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [done, setDone] = useState<Slot>();
+    [done, setDone] = useState<Slot & { managementToken?: string }>();
   const attempt = useRef<{ fingerprint: string; key: string } | undefined>(
     undefined,
   );
@@ -43,7 +43,7 @@ export function PublicBooking() {
     setBusy(true);
     setError("");
     try {
-      const result = await send<Slot>(
+      const result = await send<Slot & { managementToken?: string }>(
         "/public/reservas",
         "POST",
         body,
@@ -120,6 +120,20 @@ export function PublicBooking() {
                   Tu reserva quedó guardada. Podés guardar una captura de esta
                   confirmación.
                 </Alert>
+                {done.managementToken && <Paper variant="outlined" className="review">
+                  <h3>Guardá tu enlace privado</h3>
+                  <p>Desde acá podés cambiar o cancelar este turno. Quien tenga el enlace podrá administrarlo.</p>
+                  <TextField label="Enlace privado" value={`${window.location.origin}/mi-turno#${done.managementToken}`}
+                    slotProps={{ input: { readOnly: true } }}
+                    onFocus={(e) => e.target.select()} />
+                  <Button onClick={async () => {
+                    try { await navigator.clipboard.writeText(`${window.location.origin}/mi-turno#${done.managementToken}`);
+                      setError("Enlace copiado."); }
+                    catch { setError("Seleccioná el enlace para copiarlo manualmente."); }
+                  }}>Copiar enlace</Button>
+                  <Button href={`/mi-turno#${done.managementToken}`}>Administrar mi turno</Button>
+                  {error && <p role="status">{error}</p>}
+                </Paper>}
                 {shop.data.phone ? (
                   <Button
                     href={whatsapp(shop.data.phone)}

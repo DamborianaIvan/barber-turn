@@ -71,6 +71,10 @@ app.post(
       .status(201)
       .json(await agenda.reserve(req.body, req.get("idempotency-key"))),
 );
+app.post("/api/public/turno/consultar", rateLimit("manage-read", 60), async (req, res) =>
+  res.json(await agenda.manageReservation(req.body)));
+app.post("/api/public/turno/modificar", rateLimit("manage-write", 10), async (req, res) =>
+  res.json(await agenda.manageReservation(req.body, true)));
 app.post(
   "/api/auth/login",
   rateLimit("login-ip", 30),
