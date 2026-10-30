@@ -5,6 +5,10 @@ export const config = {
   mongo: process.env.MONGODB_URI,
   jwt: process.env.JWT_SECRET,
   abuse: process.env.ABUSE_SECRET,
+  bookingIpBurst: Number(process.env.BOOKING_IP_BURST || 5),
+  bookingIpHourly: Number(process.env.BOOKING_IP_HOURLY || 20),
+  bookingPhoneHourly: Number(process.env.BOOKING_PHONE_HOURLY || 5),
+  bookingFutureLimit: Number(process.env.BOOKING_FUTURE_LIMIT || 2),
   proxy: Number(process.env.TRUST_PROXY || 0),
 };
 export function validateConfig() {
@@ -19,6 +23,11 @@ export function validateConfig() {
     throw new Error(
       "Configurar MongoDB y dos secretos independientes de al menos 32 caracteres",
     );
+  for (const value of [config.bookingIpBurst, config.bookingIpHourly,
+    config.bookingPhoneHourly, config.bookingFutureLimit]) {
+    if (!Number.isInteger(value) || value < 1 || value > 1000)
+      throw new Error("Los límites de reservas deben ser enteros entre 1 y 1000");
+  }
   const origin = new URL(config.origin);
   if (
     origin.origin !== config.origin ||

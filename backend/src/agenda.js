@@ -23,6 +23,7 @@ import {
   settingsInput,
   clientInput,
 } from "./validation.js";
+import { config } from "./config.js";
 import { digest } from "./security.js";
 const conflict = (message, details) =>
   new ApiError(409, message, "AGENDA_CONFLICT", details);
@@ -93,6 +94,18 @@ export async function reserve(input, key, source = "public") {
     }
     const s = await validSlot(input.slotId, session);
     let client = await Client.findOne({ phone: input.phone }).session(session);
+    // Inside the agenda transaction: concurrent requests cannot bypass the cap.
+    if (source === "public") {
+      const count = await Booking.countDocuments({
+        status: "confirmado",
+        start: { $gt: new Date() },
+        $or: [{ phone: input.phone }, ...(client ? [{ client: client._id }] : [])],
+      }).session(session);
+      if (client?.bookingBlocked || count >= config.bookingFutureLimit)
+        throw new ApiError(403,
+          "No podemos completar la reserva online. Comunicate con la barbería.",
+          "ONLINE_BOOKING_UNAVAILABLE");
+    }
     if (!client)
       [client] = await Client.create(
         [{ name: input.name, phone: input.phone }],
@@ -442,6 +455,8 @@ export async function saveClient(input, clientId) {
     if (!c) throw new ApiError(404, "Cliente inexistente");
     if (c.revision !== data.revision)
       throw conflict("El cliente cambió. Recargá la ficha.");
+    if (c.bookingBlocked && data.phone !== c.phone)
+      throw new ApiError(400, "Desbloqueá el número antes de cambiar el teléfono.");
     Object.assign(c, data, { revision: c.revision + 1 });
     await c.save({ session });
     return c;

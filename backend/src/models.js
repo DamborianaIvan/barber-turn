@@ -58,6 +58,7 @@ export const Client = model("Client", {
   name: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
   notes: { type: String, default: "" },
+  bookingBlocked: { type: Boolean, default: false },
   revision: { type: Number, default: 0 },
 });
 export const Booking = model("Booking", {
@@ -80,6 +81,7 @@ Booking.schema.index(
   { unique: true, partialFilterExpression: { status: "confirmado" } },
 );
 Booking.schema.index({ start: 1 });
+Booking.schema.index({ phone: 1, status: 1, start: 1 });
 Booking.schema.index({ client: 1, start: -1 });
 export const Event = model("Event", {
   booking: Schema.Types.ObjectId,

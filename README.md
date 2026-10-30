@@ -71,3 +71,24 @@ No se incluyen proveedores de hosting ni credenciales. No está publicado autom�
 Sin pagos, señas, múltiples barberos, sucursales, cuentas de clientes, mensajes automáticos ni enlaces públicos de gestión. El teléfono es un dato de contacto no verificado; las notas y el historial nunca se consultan desde la web pública.
 
 Patrones de autenticación, transacciones, validación, permisos y estados de carga adaptados del proyecto propio Pepe’s Napoletana (referencia revisada: `7b85b677369eede811dd723493c2558096ce5ca7`). No se comparten código en ejecución, usuarios, sesiones, base de datos ni secretos.
+
+## Protección de reservas públicas
+
+Valores iniciales configurables en backend/.env: 5 intentos por minuto e IP,
+20 por hora e IP y 5 por hora y teléfono normalizado. Se cuentan también errores
+y reintentos; las ventanas son fijas y el rechazo devuelve Retry-After.
+Las consultas públicas conservan el límite compartido de 240 por 15 minutos e IP.
+Configurar TRUST_PROXY según el proxy real del alojamiento; no confiar en cabeceras arbitrarias.
+
+Cada teléfono puede tener hasta 2 turnos confirmados futuros para reservar online.
+Se cuentan también los turnos manuales y los asociados a su ficha. La comprobación
+ocurre dentro de la transacción de agenda; cancelar libera cupo y repetir una clave
+idempotente ya guardada devuelve la confirmación original, sujeto al límite de intentos.
+El dueño puede superar este cupo mediante reservas manuales, conservando las restricciones de horario.
+
+En Clientes → Editar se puede bloquear/desbloquear la reserva online de un número.
+No cancela reservas existentes, no publica el motivo y permite atención manual.
+Para cambiar el teléfono bloqueado hay que guardar antes el desbloqueo.
+El rechazo público no distingue bloqueo de límite alcanzado ni expone historial.
+Sin verificar teléfono, una persona aún puede usar otros números o conexiones.
+No se incorporan SMS, WhatsApp automático ni CAPTCHA.
